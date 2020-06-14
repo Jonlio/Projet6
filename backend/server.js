@@ -1,6 +1,8 @@
+//Importations
 const http = require('http');
 const app = require('./app');
 
+//Renvoie port valide
 const normalizePort = val => {
     const port = parseInt(val, 10);
 
@@ -35,6 +37,7 @@ const errorHandler = error => {
     }
 };
 
+//Creation serveur Node
 const server = http.createServer(app);
 
 server.on('error', errorHandler);
