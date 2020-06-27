@@ -27,7 +27,7 @@ exports.getAllSauces = (req, res, next) => {
             res.status(200).json(sauces);
     })
         .catch((error) => {
-                res.status(400).json({ error: error });
+                res.status(500).json({ error: error });
             }
         );
 };
@@ -41,7 +41,7 @@ exports.getOneSauce = (req, res, next) => {
         .then((sauce) => {
             res.status(200).json(sauce);
         }).catch((error) => {
-            res.status(400).json({
+            res.status(404).json({
                 error: error
             });
         });
@@ -64,7 +64,7 @@ exports.modifySauce = (req, res, next) => {
         .then(() => res.status(200).json({
             message: 'Sauce modifiée !'
         }))
-        .catch(error => res.status(400).json({
+        .catch(error => res.status(404).json({
             error
         }));
 };
@@ -88,7 +88,7 @@ exports.deleteSauce = (req, res, next) => {
                     }));
             });
         })
-        .catch(error => res.status(500).json({
+        .catch(error => res.status(404).json({
             error
         }));
 };
@@ -103,7 +103,7 @@ exports.likeSauce = (req, res, next) => {
                     $push: { usersLiked: req.body.userId },
                 })
                 .then(() => {
-                        res.status(201).json({ message: 'Sauce likée' });
+                        res.status(200).json({ message: 'Sauce likée' });
                     })
                 .catch((error) => {
                         res.status(400).json({ error: error });
@@ -117,7 +117,7 @@ exports.likeSauce = (req, res, next) => {
                     $push: { usersDisliked: req.body.userId },
                 })
                 .then(() => {
-                        res.status(201).json({ message: 'Sauce Dislikée' });
+                        res.status(200).json({ message: 'Sauce Dislikée' });
                     }
                 ).catch((error) => {
                         res.status(400).json({ error: error });
@@ -134,7 +134,7 @@ exports.likeSauce = (req, res, next) => {
                                 $pull: { usersLiked: req.body.userId },
                             })
                             .then(() => { 
-                                    res.status(201).json({ message: 'Like retiré' });
+                                    res.status(200).json({ message: 'Like retiré' });
                                 })
                             .catch((error) => { 
                                     res.status(400).json({ error: error });
@@ -148,7 +148,7 @@ exports.likeSauce = (req, res, next) => {
                                 $pull: { usersDisliked: req.body.userId },
                             })
                             .then(() => { 
-                                    res.status(201).json({ message: 'Dislike retiré' });
+                                    res.status(200).json({ message: 'Dislike retiré' });
                                 })
                             .catch((error) => {
                                     res.status(400).json({ error: error });
