@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config/auth.config');
 
-const regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 //Inscription utilisateur
 exports.signup = (req, res, next) => {
@@ -70,3 +70,42 @@ exports.login = (req, res, next) => {
             error
         }));
 };
+
+
+//Refacto ASYNC/AWAIT
+/*
+//Inscription utilisateur
+exports.signup = async (req, res, next) => {
+    if (!regex.test(req.body.email)) {
+        res.status(400).json({
+            message: 'Format Email invalide'
+        });
+    }
+    try {
+        const hash = await bcrypt.hash(req.body.password, 10);
+        const user = new User({ email: req.body.email, password: hash });
+        await user.save();
+        res.status(201).json({
+            message: 'Utilisateur créé !'
+        })
+    } catch (err) {
+        res.status(500).json({ error })
+    }
+};
+
+//Connexion utilisateur
+exports.login = async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) {
+        res.status(401).json({ message: 'Utilisateur non trouvé!' });
+    }
+    try {
+        await bcrypt.compare(req.body.password, user.password);
+        res.status(200).json({ userId: user._id,
+                               token: jwt.sign({ userId: user._id }, config.secret, { expiresIn: '24h' })
+        });
+    } catch(err) { 
+        res.status(500).json({ error })
+    }
+}
+*/
