@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Joi = require('joi');
 
 //Schema sauce
 const sauceSchema = mongoose.Schema({
