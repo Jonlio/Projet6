@@ -122,3 +122,95 @@ exports.likeSauce = (req, res, next) => {
             break;
     }
 };
+
+/*
+//Refacto Asyn/Await
+//Création d'une sauce
+exports.createSauce = async (req, res, next) => {
+    const sauceObject = JSON.parse(req.body.sauce);
+    delete sauceObject._id;
+    const sauce = new Sauce({
+        ...sauceObject,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        likes: 0,
+        dislikes: 0,
+        usersLiked: [],
+        usersDisliked: []
+    });
+    await sauce.save();
+    res.status(201).json({ message: 'Sauce enregistrée !'})
+}
+
+//Affichage des sauces
+exports.getAllSauces = async (req, res, next) => {
+      const sauces = await Sauce.find()
+      res.status(200).json(sauces)
+};
+
+////Affichage de la sauce selectionnée
+exports.getOneSauce = async (req, res, next) => {
+    const sauce = await Sauce.findOne({ _id: req.params.id })
+    res.status(200).json(sauce) 
+};
+
+//Modification de la sauce
+exports.modifySauce = async (req, res, next) => {
+    const sauceObject =  req.file ? { ...JSON.parse(req.body.sauce), imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` } : { ...req.body };
+    await Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+    res.status(201).json({ message: 'Sauce modifiée !' })
+};
+
+//Suppression d'une sauce
+exports.deleteSauce = async (req, res, next) => {
+    const sauce = await Sauce.findOne({ _id: req.params.id })
+    const filename = sauce.imageUrl.split('/images/')[1];
+    fs.unlink(`images/${filename}`, async () => {
+                await Sauce.deleteOne({ _id: req.params.id })
+                res.status(200).json({ message: 'Sauce supprimée !' })
+    })
+};
+
+//Like/Dislike des sauces
+exports.likeSauce = async (req, res, next) => {
+    switch (req.body.like) {
+       //Liker une sauce
+       case 1:
+            await Sauce.updateOne({ _id: req.params.id }, {
+                    $inc: { likes: 1 },
+                    $push: { usersLiked: req.body.userId },
+                })
+            res.status(200).json({ message: 'Sauce likée' })
+            break;
+      
+        //Disliker une sauce
+        case -1:
+            await Sauce.updateOne({ _id: req.params.id }, {
+                    $inc: { dislikes: 1 },
+                    $push: { usersDisliked: req.body.userId },
+                })
+            res.status(200).json({ message: 'Sauce Dislikée'})     
+            break; 
+         
+        //Retirer like
+        case 0:
+            const sauce = await Sauce.findOne({ _id: req.params.id })
+            if (sauce.usersLiked.find(user => user === req.body.userId)) {
+                Sauce.updateOne({ _id: req.params.id }, {
+                    $inc: { likes: -1 },
+                    $pull: { usersLiked: req.body.userId },
+                    })
+                res.status(200).json({ message: 'Like retiré' }) 
+            }
+                
+       //Retirer Dislike
+            if (sauce.usersDisliked.find(user => user === req.body.userId)) {
+                Sauce.updateOne({ _id: req.params.id }, {
+                    $inc: { dislikes: -1 },
+                    $pull: { usersDisliked: req.body.userId },
+                 })
+                res.status(200).json({ message: 'Dislike retiré' }) 
+            }
+            break;
+    }
+};
+*/
