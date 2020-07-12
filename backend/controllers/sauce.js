@@ -1,11 +1,11 @@
 const Sauce = require('../models/Sauce');
 const fs = require('fs');
-const regexSauce = /[a-zA-Z]/;
+const regexSauce = /^[a-z . ! , ' A-Z 0-9]*$/;
 
 //Création d'une sauce
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
-    if (!regexSauce.test(sauceObject.name, sauceObject.manufacturer, sauceObject.description, sauceObject.mainPepper)) {
+    if ((!regexSauce.test(sauceObject.name)) || (!regexSauce.test(sauceObject.manufacturer)) || (!regexSauce.test(sauceObject.description)) || (!regexSauce.test(sauceObject.mainPepper))) {
         res.status(400).json({ message: 'Format non valide' })
     } else {
     delete sauceObject._id;
@@ -18,42 +18,37 @@ exports.createSauce = (req, res, next) => {
         usersDisliked: []
     });
     sauce.save()
-        .then(() => {
-        res.status(201).json({ message: 'Sauce enregistrée !'})
-    })
+        .then(() => { res.status(201).json({ message: 'Sauce enregistrée !'}) })
         .catch(error => res.status(400).json({ error }));
-    }
-};
+}};
 
 //Affichage des sauces
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
         .then((sauces) => { res.status(200).json(sauces) })
-        .catch((error) => { res.status(500).json({ error: error }) });
+        .catch((error) => { res.status(500).json({ error: error }) });  
 };
 
 //Affichage de la sauce selectionnée
 exports.getOneSauce = (req, res, next) => {
-    Sauce.findOne({ _id: req.params.id })
-        .then((sauce) => { res.status(200).json(sauce) })
-        .catch((error) => { res.status(404).json({ error: error }) });
+    Sauce.findOne({ _id : req.params.id }) 
+        .then((sauce) => { 
+            if(!sauce) {
+                res.sendStatus(404)
+                return 
+            }
+            res.status(200).json(sauce)
+         })
+        .catch((error) => { res.status(500).json({ error: error }) });
 };
 
 //Modification de la sauce
 exports.modifySauce = (req, res, next) => {
-    const sauceObject = req.file ? {
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    } : {
-        ...req.body
-    };
-    if (!regexSauce.test(sauceObject.name, sauceObject.manufacturer, sauceObject.description, sauceObject.mainPepper)){
+    const sauceObject = req.file ? { ...JSON.parse(req.body.sauce), imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`} : { ...req.body };
+    if ((!regexSauce.test(sauceObject.name)) || (!regexSauce.test(sauceObject.manufacturer)) || (!regexSauce.test(sauceObject.description)) || (!regexSauce.test(sauceObject.mainPepper))){
         res.status(400).json({ message: 'Format non valide' })
     } else {
-    Sauce.updateOne({ _id: req.params.id }, {
-            ...sauceObject,
-            _id: req.params.id
-        })
+    Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'Sauce modifiée !' }))
         .catch(error => res.status(404).json({ error: error }));
     }
@@ -66,11 +61,11 @@ exports.deleteSauce = (req, res, next) => {
             const filename = sauce.imageUrl.split('/images/')[1];
             fs.unlink(`images/${filename}`, () => {
                 Sauce.deleteOne({ _id: req.params.id })
-                    .then(() => res.status(200).json({ message: 'Sauce supprimée !' }))
-                    .catch(error => res.status(400).json({ error }));
+                .then(() => res.status(200).json({ message: 'Sauce supprimée !' }))
+                .catch(error => res.status(400).json({ error }));
             });
         })
-        .catch(error => res.status(404).json({ error }));
+        .catch(error => res.status(500).json({ error }));
 };
 
 //Like/Dislike des sauces
@@ -123,94 +118,3 @@ exports.likeSauce = (req, res, next) => {
     }
 };
 
-/*
-//Refacto Asyn/Await
-//Création d'une sauce
-exports.createSauce = async (req, res, next) => {
-    const sauceObject = JSON.parse(req.body.sauce);
-    delete sauceObject._id;
-    const sauce = new Sauce({
-        ...sauceObject,
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-        likes: 0,
-        dislikes: 0,
-        usersLiked: [],
-        usersDisliked: []
-    });
-    await sauce.save();
-    res.status(201).json({ message: 'Sauce enregistrée !'})
-}
-
-//Affichage des sauces
-exports.getAllSauces = async (req, res, next) => {
-      const sauces = await Sauce.find()
-      res.status(200).json(sauces)
-};
-
-////Affichage de la sauce selectionnée
-exports.getOneSauce = async (req, res, next) => {
-    const sauce = await Sauce.findOne({ _id: req.params.id })
-    res.status(200).json(sauce) 
-};
-
-//Modification de la sauce
-exports.modifySauce = async (req, res, next) => {
-    const sauceObject =  req.file ? { ...JSON.parse(req.body.sauce), imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` } : { ...req.body };
-    await Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-    res.status(201).json({ message: 'Sauce modifiée !' })
-};
-
-//Suppression d'une sauce
-exports.deleteSauce = async (req, res, next) => {
-    const sauce = await Sauce.findOne({ _id: req.params.id })
-    const filename = sauce.imageUrl.split('/images/')[1];
-    fs.unlink(`images/${filename}`, async () => {
-                await Sauce.deleteOne({ _id: req.params.id })
-                res.status(200).json({ message: 'Sauce supprimée !' })
-    })
-};
-
-//Like/Dislike des sauces
-exports.likeSauce = async (req, res, next) => {
-    switch (req.body.like) {
-       //Liker une sauce
-       case 1:
-            await Sauce.updateOne({ _id: req.params.id }, {
-                    $inc: { likes: 1 },
-                    $push: { usersLiked: req.body.userId },
-                })
-            res.status(200).json({ message: 'Sauce likée' })
-            break;
-      
-        //Disliker une sauce
-        case -1:
-            await Sauce.updateOne({ _id: req.params.id }, {
-                    $inc: { dislikes: 1 },
-                    $push: { usersDisliked: req.body.userId },
-                })
-            res.status(200).json({ message: 'Sauce Dislikée'})     
-            break; 
-         
-        //Retirer like
-        case 0:
-            const sauce = await Sauce.findOne({ _id: req.params.id })
-            if (sauce.usersLiked.find(user => user === req.body.userId)) {
-                Sauce.updateOne({ _id: req.params.id }, {
-                    $inc: { likes: -1 },
-                    $pull: { usersLiked: req.body.userId },
-                    })
-                res.status(200).json({ message: 'Like retiré' }) 
-            }
-                
-       //Retirer Dislike
-            if (sauce.usersDisliked.find(user => user === req.body.userId)) {
-                Sauce.updateOne({ _id: req.params.id }, {
-                    $inc: { dislikes: -1 },
-                    $pull: { usersDisliked: req.body.userId },
-                 })
-                res.status(200).json({ message: 'Dislike retiré' }) 
-            }
-            break;
-    }
-};
-*/
