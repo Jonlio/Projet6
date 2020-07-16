@@ -1,6 +1,6 @@
 const Sauce = require('../models/Sauce');
 const fs = require('fs');
-const regexSauce = /^[a-z . ! , ' A-Z 0-9]*$/;
+const regexSauce = /^[a-z.!,'A-Z 0-9]*$/;
 
 //Création d'une sauce
 exports.createSauce = (req, res, next) => {
